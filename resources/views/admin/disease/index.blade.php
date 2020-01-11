@@ -12,7 +12,6 @@
                         <th>Code</th>
                         <th>Name</th>
                         <th>Symptoms</th>
-                        <th>Solutions</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -22,8 +21,9 @@
                             <td>{{ $disease->code }}</td>
                             <td>{{ $disease->name }}</td>
                             <td>{{ $disease->symptoms()->get()->count() }}</td>
-                            <td>{{ $disease->solutions()->get()->count() }}</td>
-                            <td></td>
+                            <td class="text-right">
+                                <a href="{{ route('admin.diseases.show', $disease->code) }}" class="btn btn-sm btn-primary">Show</a>
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
