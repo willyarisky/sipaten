@@ -23,7 +23,7 @@ Auth::routes([ 'register' => false ]);
 
 Route::group([
     'middleware' => ['auth'],
-    'prefix' => 'dashboard',
+    'prefix' => 'admin',
     'as' => 'admin.',
     'namespace' => 'Admin'],
     function () {
