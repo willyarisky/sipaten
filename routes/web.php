@@ -17,6 +17,7 @@ use App\MappingSolution;
 */
 
 Route::get('/', 'AppController@index')->name('index');
+Route::post('/analyze', 'AppController@analyze');
 
 Auth::routes([ 'register' => false ]);
 
