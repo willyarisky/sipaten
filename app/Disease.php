@@ -26,6 +26,17 @@ class Disease extends Model
         return $this->belongsToMany('App\Solution', 'mapping_solutions', 'code_diseases', 'code_solutions' );
     }
 
+    /**
+     * Get solution
+     */
+    public function solution()
+    {
+        return $this->solutions()->first();
+    }
+
+    /**
+     * Calculate the probability
+     */
     public static function probability() {
         $disease = self::count();
 
@@ -33,33 +44,59 @@ class Disease extends Model
     }
 
     /**
+     * Get by code
+     */
+    public static function byCode($code) {
+        return self::where('code', $code)->first();
+    }
+
+    /**
      * Get probability
+     * @param array $symptomps
+     * @param string $disease
+     * @return array $probability
      */
     public static function getProbability($disease, $symptoms) {
         $probability = [];
 
         foreach ($symptoms as $key => $value) {
-            $chek = DB::select(
+            $check = DB::select(
                 "SELECT * FROM symptoms a
                 LEFT JOIN mapping_symptoms b ON a.`code` = b.code_symptoms
                 WHERE b.code_diseases = ? AND b.code_symptoms = ?",
                 [$disease, $value]
             );
 
-            if (! empty($chek)) {
-                $probability[$value] = 0.5;
+            if (!empty($check)) {
+                $probability[$value] = Symptom::probability();
             } else {
                 $probability[$value] = 0;
             }
         }
 
         return $probability;
-    } 
+    }
 
     /**
-     * Get bayes
+     * Get all probabilities
+     * @param array $symptomps
+     * @param array $request
+     * @return array $probability
      */
-    public static function getBayes($symptomp, $symptomp_value) {
+    public static function getProbabilities($disease, $request)
+    {
+        foreach ($disease as $key => $value) {
+            $probabilities[$value] = self::getProbability($value, $request->symptoms);
+        }
+
+        return $probabilities;
+    }
+
+    /**
+     * Bayes of symptom
+     */
+    public static function bayes($symptomp, $symptomp_value) 
+    {
         $diseases = self::get()->pluck("code");
 
         $first_num  = $symptomp_value * self::probability();
@@ -78,5 +115,20 @@ class Disease extends Model
         } else {
             return 0;
         }
+    }
+
+    /**
+     * Get all bayes
+     */
+    public static function getBayes($probabilities, $diseases)
+    {
+        // get bayes numbers
+        foreach ($probabilities as $diseases => $symptoms) {
+            foreach ($symptoms as $symptom => $symptom_probabilty) {
+                $bayes[$diseases][$symptom] = Disease::bayes($symptom, $symptom_probabilty);
+            }
+        }
+
+        return $bayes;
     }
 }

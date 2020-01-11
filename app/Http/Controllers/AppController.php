@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Symptom;
 use App\Disease;
 use Illuminate\Http\Request;
-use DB;
 
 class AppController extends Controller
 {
@@ -19,28 +18,40 @@ class AppController extends Controller
         return view('welcome', compact('symptoms'));
     }
 
+    /**
+     * Analyze the disease from given symptoms
+     * @param array $request
+     * @return array $result_bayes
+     */
     public function analyze(Request $request) {
-        $disease = Disease::whereHas('symptoms', function($query) use ($request) {
-            $query->whereIn("code_symptoms", $request->symptoms);
-        })->pluck("code");
+        // get diseases from selected symptoms
+        $diseases = Disease::whereHas('symptoms', function($query) use ($request) {
+                        $query->whereIn("code_symptoms", $request->symptoms);
+                    })->pluck("code");
 
-        $probability = [];
-        foreach ($disease as $key => $value) {
-            $probability[$value] = Disease::getProbability($value, $request->symptoms);
+        // Get disease probabilities according to given data of symptoms
+        $probabilities = Disease::getProbabilities($diseases, $request);
+
+        // get all bayes according to data probabilities and diseases of data
+        $bayes = Disease::getBayes($probabilities, $diseases);
+
+        // get total bayes
+        foreach ($bayes as $diseases => $symptoms_cal) {
+            $disease = Disease::byCode($diseases);
+
+            $data[] = [
+                'code' => $disease->code,
+                'name' => $disease->name,
+                'solution' => $disease->solutions()->first(),
+                'bayes' => array_sum($symptoms_cal) * 100
+            ];
         }
 
-        $bayes = [];
+        // sort the data from highest to lowest
+        usort($data, function($a, $b) {
+            return $a['bayes'] < $b['bayes'];
+        });
 
-        foreach ($probability as $disease => $symptoms) {
-            foreach ($symptoms as $symptom => $symptom_probabilty) {
-                $bayes[$disease][$symptom] = Disease::getBayes($symptom, $symptom_probabilty);
-            }
-        }
-
-        foreach ($bayes as $disease => $symptoms) {
-            $result_bayes[$disease] = array_sum($symptoms) * 100;
-        }
-
-        dd($result_bayes);
+        return $data;
     }
 }
