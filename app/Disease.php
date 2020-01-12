@@ -57,20 +57,16 @@ class Disease extends Model
      * @return array $probability
      */
     public static function getProbability($disease, $symptoms) {
-        $probability = [];
+        foreach ($symptoms as $key => $symptom) {
+            $check = Symptom::whereHas('diseases', function($query) use($disease, $symptom) {
+                                $query->where('code_diseases', $disease);
+                                $query->where('code_symptoms', $symptom);
+                            })->count();
 
-        foreach ($symptoms as $key => $value) {
-            $check = DB::select(
-                "SELECT * FROM symptoms a
-                LEFT JOIN mapping_symptoms b ON a.`code` = b.code_symptoms
-                WHERE b.code_diseases = ? AND b.code_symptoms = ?",
-                [$disease, $value]
-            );
-
-            if (!empty($check)) {
-                $probability[$value] = Symptom::probability();
+            if ($check > 0 ) {
+                $probability[$symptom] = Symptom::probability();
             } else {
-                $probability[$value] = 0;
+                $probability[$symptom] = 0;
             }
         }
 
