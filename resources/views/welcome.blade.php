@@ -22,7 +22,7 @@
                     <button type="submit" class="btn btn-primary btn-lg btn-block" id="btn-analyze">ANALISA PENYAKIT</button>
                 </form>
             </div>
-            <div class="col-md-6 col-12">
+            <div class="col-md-6 col-12 mt-md-0 mt-3">
                 <h4 class="pb-2 border-bottom">Hasil Analisa</h4>
                 <div id="results"></div>
             </div>
