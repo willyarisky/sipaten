@@ -95,20 +95,16 @@ class Disease extends Model
     /**
      * Bayes of symptom
      */
-    public static function bayes($symptomp, $symptomp_value) 
+    public static function bayes($symptom, $symptom_value) 
     {
         $diseases = self::get()->pluck("code");
 
-        $first_num  = $symptomp_value * self::probability();
-
-        $tmp = DB::select(
-            "SELECT * FROM diseases a 
-            LEFT JOIN mapping_symptoms b ON a.`code` = b.code_diseases
-            WHERE b.code_symptoms = ?",
-            [$symptomp]
-        );
+        $first_num  = $symptom_value * self::probability();
+        $tmp = Disease::whereHas('symptoms', function($query) use($symptom) {
+                        $query->where('code_symptoms', $symptom);
+                    })->count();
         
-        $second_num = (($symptomp_value  * self::probability()) * count($tmp));
+        $second_num = (($symptom_value  * self::probability()) * $tmp);
         
         if ($second_num > 0) {
             return $first_num / $second_num;
