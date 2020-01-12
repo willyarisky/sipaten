@@ -1,21 +1,4 @@
 <?php
-
-use App\Disease;
-use App\Symptom;
-use App\MappingSymptom;
-use App\MappingSolution;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-
 Route::get('/', 'AppController@index')->name('index');
 Route::post('/analyze', 'AppController@analyze');
 
@@ -31,7 +14,3 @@ Route::group([
         Route::resource('diseases', 'DiseaseController');
     }
 );
-
-Route::get('/test', function () {
-    return MappingSymptom::get();
-});
