@@ -16,4 +16,12 @@ class Symptom extends Model
 
         return $disease / $symptom;
     }
+
+    /**
+     * Get Diseases
+     */
+    public function diseases()
+    {
+        return $this->belongsToMany('App\Disease', 'mapping_symptoms', 'code_symptoms', 'code_diseases' );
+    }
 }
